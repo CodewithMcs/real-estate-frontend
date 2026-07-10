@@ -2,22 +2,48 @@
 
 import {
   PropertyCard,
-  propertyMediaUrl,
   type PropertyCardData,
 } from "@/components/property/PropertyCard";
 import { useAuth } from "@/context/AuthContext";
 import { useApi } from "@/hooks/useApi";
 import { authenticatedRequest } from "@/lib/authSession";
 import axios from "axios";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   FaArrowLeft,
   FaArrowRight,
-  FaImage,
-  FaLocationDot,
   FaMagnifyingGlass,
 } from "react-icons/fa6";
+
+const HERO_SLIDES = [
+  {
+    image: "/images/hero/city-towers.webp",
+    title: "Upgrade to a bigger home",
+    description: "Discover premium homes designed for the way you want to live.",
+  },
+  {
+    image: "/images/hero/luxury-villa.webp",
+    title: "Find a home that feels yours",
+    description: "Explore elegant villas in peaceful, well-connected locations.",
+  },
+  {
+    image: "/images/hero/land-plots.webp",
+    title: "Build your future from the ground up",
+    description: "Choose verified residential plots ready for your next investment.",
+  },
+  {
+    image: "/images/hero/apartments.webp",
+    title: "Modern living for every family",
+    description: "Browse welcoming apartment communities with space to grow.",
+  },
+  {
+    image: "/images/hero/commercial.webp",
+    title: "The right space for bigger ambitions",
+    description: "Find commercial properties that put your business in the right place.",
+  },
+] as const;
 
 type PropertiesResponse = {
   data: {
@@ -121,18 +147,6 @@ export default function Home() {
       (!isAuthenticated || !user?.id || property.user_id !== user.id) &&
       !completedRequestPropertyIdSet.has(property.id),
   );
-  const heroProperties = useMemo(
-    () =>
-      (response?.data.properties ?? []).filter((property) =>
-        property.media?.some(
-          (media) => media.media_type === "image" && media.file_url,
-        ),
-      ),
-    [response],
-  );
-  const activeHeroSlideIndex = heroProperties.length
-    ? heroSlideIndex % heroProperties.length
-    : 0;
   const selectedCategory = categories.find(
     (category) => category.slug === categorySlug,
   );
@@ -242,20 +256,16 @@ export default function Home() {
   }, [selectedStateId]);
 
   useEffect(() => {
-    if (heroProperties.length < 2) {
-      return;
-    }
-
     const interval = window.setInterval(() => {
-      setHeroSlideIndex((current) => (current + 1) % heroProperties.length);
+      setHeroSlideIndex((current) => (current + 1) % HERO_SLIDES.length);
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [heroProperties.length]);
+  }, []);
 
   function showHeroSlide(direction: number) {
     setHeroSlideIndex((current) =>
-      (current + direction + heroProperties.length) % heroProperties.length,
+      (current + direction + HERO_SLIDES.length) % HERO_SLIDES.length,
     );
   }
 
@@ -333,111 +343,85 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-1 bg-gray-50">
-      <section className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)]">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600">
-              Red Sand Group
-            </p>
-            <h1 className="mt-3 text-3xl font-bold leading-tight text-gray-950 sm:text-4xl md:text-5xl">
-              Find trusted properties across India.
-            </h1>
-            <p className="mt-4 text-base leading-7 text-gray-700 sm:mt-5 sm:text-lg sm:leading-8">
-              Search verified plots, apartments, villas, and commercial spaces
-              using location, keyword, and property type filters.
-            </p>
+    <main className="flex flex-1 flex-col bg-gray-50">
+      <section
+        aria-label="Featured real estate"
+        className="relative h-[500px] overflow-hidden bg-gray-900 sm:h-[590px]"
+      >
+        {HERO_SLIDES.map((slide, index) => (
+          <div
+            aria-hidden={index !== heroSlideIndex}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === heroSlideIndex ? "opacity-100" : "opacity-0"
+            }`}
+            key={slide.image}
+          >
+            <Image
+              alt=""
+              className="object-cover"
+              fill
+              priority={index === 0}
+              sizes="100vw"
+              src={slide.image}
+            />
+            <div className="absolute inset-0 bg-black/50" />
           </div>
+        ))}
 
-          <div className="relative hidden min-h-[350px] lg:block">
-            {heroProperties.length > 0 ? (
-              <div className="absolute inset-0">
-                {heroProperties.map((property, index) => {
-                  const image = property.media?.find(
-                    (media) => media.media_type === "image" && media.file_url,
-                  );
-                  const offset =
-                    (index - activeHeroSlideIndex + heroProperties.length) %
-                    heroProperties.length;
-                  const isVisible = offset < 3;
-
-                  return (
-                    <button
-                      aria-label={`View ${property.title ?? "property"}`}
-                      className={`absolute inset-y-0 right-0 w-[88%] overflow-hidden rounded-2xl bg-gray-200 text-left shadow-xl ring-1 ring-black/5 transition-all duration-700 ease-out ${
-                        isVisible
-                          ? "pointer-events-auto opacity-100"
-                          : "pointer-events-none opacity-0"
-                      }`}
-                      key={property.id}
-                      onClick={() =>
-                        offset === 0
-                          ? router.push(`/properties/${property.id}`)
-                          : setHeroSlideIndex(index)
-                      }
-                      style={{
-                        transform: `translateX(${-offset * 7}%) scale(${1 - offset * 0.055})`,
-                        transformOrigin: "left center",
-                        zIndex: 10 - offset,
-                      }}
-                      type="button"
-                    >
-                      <img
-                        alt={property.title ?? "Featured property"}
-                        className="h-full w-full object-cover"
-                        src={propertyMediaUrl(image?.file_url)}
-                      />
-                      <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-                      {offset === 0 ? (
-                        <span className="absolute inset-x-0 bottom-0 block p-6 text-white">
-                          <span className="block text-xs font-bold uppercase tracking-[0.18em] text-red-300">
-                            Featured property
-                          </span>
-                          <span className="mt-2 block text-2xl font-bold">
-                            {property.title ?? "Explore this property"}
-                          </span>
-                          <span className="mt-2 flex items-center gap-2 text-sm text-gray-200">
-                            <FaLocationDot className="text-red-400" />
-                            {[property.city?.name, property.state?.name]
-                              .filter(Boolean)
-                              .join(", ") || "View property details"}
-                          </span>
-                        </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-
-                {heroProperties.length > 1 ? (
-                  <div className="absolute bottom-5 right-5 z-20 flex gap-2">
-                    <button
-                      aria-label="Previous property"
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-950 shadow-md transition hover:bg-white"
-                      onClick={() => showHeroSlide(-1)}
-                      type="button"
-                    >
-                      <FaArrowLeft size={14} />
-                    </button>
-                    <button
-                      aria-label="Next property"
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-700"
-                      onClick={() => showHeroSlide(1)}
-                      type="button"
-                    >
-                      <FaArrowRight size={14} />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="flex h-full items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-gray-200 text-red-500 ring-1 ring-gray-200">
-                <FaImage size={44} />
-              </div>
-            )}
-          </div>
+        <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col items-center justify-center px-12 text-center text-white">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-red-300 sm:text-sm">
+            Red Sand Group
+          </p>
+          <h1 className="mt-4 max-w-4xl text-3xl font-bold uppercase leading-tight sm:text-5xl lg:text-6xl">
+            {HERO_SLIDES[heroSlideIndex].title}
+          </h1>
+          <p className="mt-5 max-w-2xl text-sm leading-6 text-gray-100 sm:text-lg">
+            {HERO_SLIDES[heroSlideIndex].description}
+          </p>
+          <button
+            className="mt-8 bg-red-600 px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-red-700 sm:px-9"
+            onClick={() => router.push("/properties")}
+            type="button"
+          >
+            View properties
+          </button>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <button
+          aria-label="Previous slide"
+          className="absolute left-0 top-1/2 z-20 flex h-14 w-11 -translate-y-1/2 items-center justify-center rounded-r-md bg-black/45 text-white transition hover:bg-red-600 sm:h-16 sm:w-14"
+          onClick={() => showHeroSlide(-1)}
+          type="button"
+        >
+          <FaArrowLeft />
+        </button>
+        <button
+          aria-label="Next slide"
+          className="absolute right-0 top-1/2 z-20 flex h-14 w-11 -translate-y-1/2 items-center justify-center rounded-l-md bg-black/45 text-white transition hover:bg-red-600 sm:h-16 sm:w-14"
+          onClick={() => showHeroSlide(1)}
+          type="button"
+        >
+          <FaArrowRight />
+        </button>
+
+        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+          {HERO_SLIDES.map((slide, index) => (
+            <button
+              aria-label={`Show slide ${index + 1}`}
+              className={`h-2.5 rounded-full transition-all ${
+                index === heroSlideIndex ? "w-8 bg-red-600" : "w-2.5 bg-white/70"
+              }`}
+              key={slide.image}
+              onClick={() => setHeroSlideIndex(index)}
+              type="button"
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+
+        <div className="grid gap-4 md:grid-cols-2">
           <button
             className="flex items-center justify-between gap-4 rounded-lg bg-white p-4 text-left shadow-sm ring-1 ring-gray-200 transition-all hover:-translate-y-1 hover:shadow-md sm:p-5"
             onClick={() =>
