@@ -2,6 +2,7 @@
 
 import {
   PropertyCard,
+  propertyMediaUrl,
   type PropertyCardData,
 } from "@/components/property/PropertyCard";
 import { useAuth } from "@/context/AuthContext";
@@ -10,7 +11,13 @@ import { authenticatedRequest } from "@/lib/authSession";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { FaArrowRight, FaMagnifyingGlass } from "react-icons/fa6";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaImage,
+  FaLocationDot,
+  FaMagnifyingGlass,
+} from "react-icons/fa6";
 
 type PropertiesResponse = {
   data: {
@@ -84,6 +91,7 @@ export default function Home() {
   const [buyRequestError, setBuyRequestError] = useState("");
   const [buyRequestPropertyId, setBuyRequestPropertyId] = useState("");
   const [newRequestedPropertyIds, setNewRequestedPropertyIds] = useState<string[]>([]);
+  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
   const { error, hasLoaded, isLoading, request, response } =
     useApi<PropertiesResponse>({
     immediate: true,
@@ -113,6 +121,18 @@ export default function Home() {
       (!isAuthenticated || !user?.id || property.user_id !== user.id) &&
       !completedRequestPropertyIdSet.has(property.id),
   );
+  const heroProperties = useMemo(
+    () =>
+      (response?.data.properties ?? []).filter((property) =>
+        property.media?.some(
+          (media) => media.media_type === "image" && media.file_url,
+        ),
+      ),
+    [response],
+  );
+  const activeHeroSlideIndex = heroProperties.length
+    ? heroSlideIndex % heroProperties.length
+    : 0;
   const selectedCategory = categories.find(
     (category) => category.slug === categorySlug,
   );
@@ -221,6 +241,24 @@ export default function Home() {
     };
   }, [selectedStateId]);
 
+  useEffect(() => {
+    if (heroProperties.length < 2) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setHeroSlideIndex((current) => (current + 1) % heroProperties.length);
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [heroProperties.length]);
+
+  function showHeroSlide(direction: number) {
+    setHeroSlideIndex((current) =>
+      (current + direction + heroProperties.length) % heroProperties.length,
+    );
+  }
+
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -297,17 +335,106 @@ export default function Home() {
   return (
     <main className="flex flex-1 bg-gray-50">
       <section className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600">
-            Red Sand Group
-          </p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-gray-950 sm:text-4xl md:text-5xl">
-            Find trusted properties across India.
-          </h1>
-          <p className="mt-4 text-base leading-7 text-gray-700 sm:mt-5 sm:text-lg sm:leading-8">
-            Search verified plots, apartments, villas, and commercial spaces
-            using location, keyword, and property type filters.
-          </p>
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)]">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600">
+              Red Sand Group
+            </p>
+            <h1 className="mt-3 text-3xl font-bold leading-tight text-gray-950 sm:text-4xl md:text-5xl">
+              Find trusted properties across India.
+            </h1>
+            <p className="mt-4 text-base leading-7 text-gray-700 sm:mt-5 sm:text-lg sm:leading-8">
+              Search verified plots, apartments, villas, and commercial spaces
+              using location, keyword, and property type filters.
+            </p>
+          </div>
+
+          <div className="relative hidden min-h-[350px] lg:block">
+            {heroProperties.length > 0 ? (
+              <div className="absolute inset-0">
+                {heroProperties.map((property, index) => {
+                  const image = property.media?.find(
+                    (media) => media.media_type === "image" && media.file_url,
+                  );
+                  const offset =
+                    (index - activeHeroSlideIndex + heroProperties.length) %
+                    heroProperties.length;
+                  const isVisible = offset < 3;
+
+                  return (
+                    <button
+                      aria-label={`View ${property.title ?? "property"}`}
+                      className={`absolute inset-y-0 right-0 w-[88%] overflow-hidden rounded-2xl bg-gray-200 text-left shadow-xl ring-1 ring-black/5 transition-all duration-700 ease-out ${
+                        isVisible
+                          ? "pointer-events-auto opacity-100"
+                          : "pointer-events-none opacity-0"
+                      }`}
+                      key={property.id}
+                      onClick={() =>
+                        offset === 0
+                          ? router.push(`/properties/${property.id}`)
+                          : setHeroSlideIndex(index)
+                      }
+                      style={{
+                        transform: `translateX(${-offset * 7}%) scale(${1 - offset * 0.055})`,
+                        transformOrigin: "left center",
+                        zIndex: 10 - offset,
+                      }}
+                      type="button"
+                    >
+                      <img
+                        alt={property.title ?? "Featured property"}
+                        className="h-full w-full object-cover"
+                        src={propertyMediaUrl(image?.file_url)}
+                      />
+                      <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+                      {offset === 0 ? (
+                        <span className="absolute inset-x-0 bottom-0 block p-6 text-white">
+                          <span className="block text-xs font-bold uppercase tracking-[0.18em] text-red-300">
+                            Featured property
+                          </span>
+                          <span className="mt-2 block text-2xl font-bold">
+                            {property.title ?? "Explore this property"}
+                          </span>
+                          <span className="mt-2 flex items-center gap-2 text-sm text-gray-200">
+                            <FaLocationDot className="text-red-400" />
+                            {[property.city?.name, property.state?.name]
+                              .filter(Boolean)
+                              .join(", ") || "View property details"}
+                          </span>
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+
+                {heroProperties.length > 1 ? (
+                  <div className="absolute bottom-5 right-5 z-20 flex gap-2">
+                    <button
+                      aria-label="Previous property"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-950 shadow-md transition hover:bg-white"
+                      onClick={() => showHeroSlide(-1)}
+                      type="button"
+                    >
+                      <FaArrowLeft size={14} />
+                    </button>
+                    <button
+                      aria-label="Next property"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition hover:bg-red-700"
+                      onClick={() => showHeroSlide(1)}
+                      type="button"
+                    >
+                      <FaArrowRight size={14} />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-gray-200 text-red-500 ring-1 ring-gray-200">
+                <FaImage size={44} />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
