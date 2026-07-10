@@ -175,6 +175,30 @@ function getActiveSocialLinks(property: PropertyDetailsData) {
     .sort((first, second) => (first.sort_order ?? 0) - (second.sort_order ?? 0));
 }
 
+function MediaImage({ alt, className, src }: { alt: string; className: string; src: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !src) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100 text-gray-400`}>
+        <span className="flex flex-col items-center gap-2 text-xs font-semibold">
+          <FaImage size={24} />
+          Image unavailable
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      alt={alt}
+      className={className}
+      onError={() => setHasError(true)}
+      src={src}
+    />
+  );
+}
+
 export function PropertyDetails({ propertyId }: { propertyId: string }) {
   const { isAuthenticated, user } = useAuth();
   const propertyRequest = useApi<PropertyDetailsResponse>({
@@ -285,9 +309,10 @@ export function PropertyDetails({ propertyId }: { propertyId: string }) {
                         src={propertyMediaUrl(selectedMedia.file_url)}
                       />
                     ) : selectedMedia.media_type === "image" ? (
-                      <img
+                      <MediaImage
                         alt={property.title ?? "Property"}
                         className="h-full w-full object-cover"
+                        key={selectedMedia.file_url}
                         src={propertyMediaUrl(selectedMedia.file_url)}
                       />
                     ) : (
@@ -328,9 +353,10 @@ export function PropertyDetails({ propertyId }: { propertyId: string }) {
                               <FaVideo size={22} />
                             </div>
                           ) : media.media_type === "image" ? (
-                            <img
+                            <MediaImage
                               alt={property.title ?? "Property"}
                               className="h-full w-full object-cover"
+                              key={media.file_url}
                               src={propertyMediaUrl(media.file_url)}
                             />
                           ) : (

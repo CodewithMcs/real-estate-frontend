@@ -364,26 +364,27 @@ export default function Home() {
               sizes="100vw"
               src={slide.image}
             />
-            <div className="absolute inset-0 bg-black/50" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
           </div>
         ))}
 
-        <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col items-center justify-center px-12 text-center text-white">
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col items-start justify-center px-16 pt-16 text-left text-white sm:px-20 lg:px-6">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-red-300 sm:text-sm">
             Red Sand Group
           </p>
-          <h1 className="mt-4 max-w-4xl text-3xl font-bold uppercase leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-bold uppercase leading-tight sm:text-5xl lg:text-6xl">
             {HERO_SLIDES[heroSlideIndex].title}
           </h1>
-          <p className="mt-5 max-w-2xl text-sm leading-6 text-gray-100 sm:text-lg">
+          <p className="mt-5 max-w-xl text-sm leading-6 text-gray-100 sm:text-lg">
             {HERO_SLIDES[heroSlideIndex].description}
           </p>
           <button
-            className="mt-8 bg-red-600 px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-red-700 sm:px-9"
+            className="mt-8 inline-flex items-center gap-3 rounded-md bg-red-600 px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-red-700 sm:px-8"
             onClick={() => router.push("/properties")}
             type="button"
           >
             View properties
+            <FaArrowRight size={13} />
           </button>
         </div>
 

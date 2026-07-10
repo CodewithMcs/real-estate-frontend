@@ -17,7 +17,7 @@ const informationLinks = [
   { label: "Services", href: "/services" },
 ];
 
-export function Navbar() {
+export function Navbar({ isOverlay = false }: { isOverlay?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isInformationOpen, setIsInformationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -73,7 +73,7 @@ export function Navbar() {
 
   return (
     <div className="relative" ref={navRef}>
-      <nav className="hidden items-center gap-5 text-sm font-medium text-gray-700 lg:gap-7 md:flex">
+      <nav className={`hidden items-center gap-5 text-sm font-medium lg:gap-7 md:flex ${isOverlay ? "text-white" : "text-gray-700"}`}>
         {visibleNavLinks.map((link) => {
           const isActive = isActiveLink(link.href);
 
@@ -141,7 +141,7 @@ export function Navbar() {
             <button
               aria-expanded={isProfileOpen}
               aria-haspopup="menu"
-              className="flex h-11 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-800 transition-colors hover:border-red-200 hover:text-red-500"
+              className={`flex h-11 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors hover:border-red-300 hover:text-red-500 ${isOverlay ? "border-white/30 bg-black/20 text-white" : "border-gray-200 bg-white text-gray-800"}`}
               onClick={() => {
                 setIsProfileOpen((current) => !current);
                 setIsInformationOpen(false);
@@ -222,7 +222,7 @@ export function Navbar() {
         ) : (
           <div className="flex items-center gap-3">
             <Link
-              className="font-semibold text-gray-700 transition-colors hover:text-red-500"
+              className={`font-semibold transition-colors hover:text-red-500 ${isOverlay ? "text-white" : "text-gray-700"}`}
               href="/auth/login"
               onClick={closeMenu}
             >
@@ -242,13 +242,13 @@ export function Navbar() {
       <button
         aria-expanded={isOpen}
         aria-label="Toggle navigation menu"
-        className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-md border border-gray-200 text-black md:hidden"
+        className={`flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-md border md:hidden ${isOverlay ? "border-white/40 text-white" : "border-gray-200 text-black"}`}
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        <span className="h-0.5 w-5 bg-black" />
-        <span className="h-0.5 w-5 bg-black" />
-        <span className="h-0.5 w-5 bg-black" />
+        <span className={`h-0.5 w-5 ${isOverlay ? "bg-white" : "bg-black"}`} />
+        <span className={`h-0.5 w-5 ${isOverlay ? "bg-white" : "bg-black"}`} />
+        <span className={`h-0.5 w-5 ${isOverlay ? "bg-white" : "bg-black"}`} />
       </button>
 
       {isOpen ? (
