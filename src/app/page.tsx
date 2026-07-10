@@ -12,8 +12,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
-  FaArrowLeft,
   FaArrowRight,
+  FaChevronLeft,
+  FaChevronRight,
   FaMagnifyingGlass,
 } from "react-icons/fa6";
 
@@ -391,19 +392,19 @@ export default function Home() {
 
         <button
           aria-label="Previous slide"
-          className="absolute left-0 top-1/2 z-20 flex h-14 w-11 -translate-y-1/2 items-center justify-center rounded-r-md bg-black/45 text-white transition hover:bg-red-600 sm:h-16 sm:w-14"
+          className="group absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/25 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-red-400 hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 sm:left-7 sm:h-12 sm:w-12"
           onClick={() => showHeroSlide(-1)}
           type="button"
         >
-          <FaArrowLeft />
+          <FaChevronLeft className="transition-transform duration-300 group-hover:-translate-x-0.5" size={15} />
         </button>
         <button
           aria-label="Next slide"
-          className="absolute right-0 top-1/2 z-20 flex h-14 w-11 -translate-y-1/2 items-center justify-center rounded-l-md bg-black/45 text-white transition hover:bg-red-600 sm:h-16 sm:w-14"
+          className="group absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/25 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-red-400 hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 sm:right-7 sm:h-12 sm:w-12"
           onClick={() => showHeroSlide(1)}
           type="button"
         >
-          <FaArrowRight />
+          <FaChevronRight className="transition-transform duration-300 group-hover:translate-x-0.5" size={15} />
         </button>
 
         <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
