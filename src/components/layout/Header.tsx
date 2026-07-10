@@ -30,7 +30,12 @@ export function Header() {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link className="flex items-center gap-3" href="/">
+        <Link
+          className={`flex items-center gap-3 rounded-lg px-2 py-1 transition-colors ${
+            isHomeOverlay ? "bg-white/90 shadow-sm" : ""
+          }`}
+          href="/"
+        >
           <Image
             alt="Red Sand Group logo"
             className="h-12 w-auto"

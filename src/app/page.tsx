@@ -25,7 +25,7 @@ const HERO_SLIDES = [
   },
   {
     image: "/images/hero/luxury-villa.webp",
-    title: "Find a home that feels yours",
+    title: "Find a home that feels like yours",
     description: "Explore elegant villas in peaceful, well-connected locations.",
   },
   {
@@ -351,8 +351,10 @@ export default function Home() {
         {HERO_SLIDES.map((slide, index) => (
           <div
             aria-hidden={index !== heroSlideIndex}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === heroSlideIndex ? "opacity-100" : "opacity-0"
+            className={`absolute inset-0 transition-all duration-1000 ease-out ${
+              index === heroSlideIndex
+                ? "pointer-events-auto scale-100 opacity-100"
+                : "pointer-events-none scale-[1.025] opacity-0"
             }`}
             key={slide.image}
           >
@@ -365,28 +367,27 @@ export default function Home() {
               src={slide.image}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
+            <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col items-start justify-center px-16 pt-16 text-left text-white sm:px-20 lg:px-6">
+              <p className="text-xs font-bold uppercase tracking-[0.32em] text-red-300 sm:text-sm">
+                Red Sand Group
+              </p>
+              <h1 className="mt-5 max-w-3xl text-3xl font-bold uppercase leading-[1.12] tracking-[-0.025em] sm:text-5xl lg:text-6xl">
+                {slide.title}
+              </h1>
+              <p className="mt-5 max-w-xl border-l-2 border-red-500 pl-4 text-sm leading-6 text-gray-100 sm:text-lg">
+                {slide.description}
+              </p>
+              <button
+                className="mt-8 inline-flex items-center gap-4 rounded-md bg-red-600 px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl sm:px-8"
+                onClick={() => router.push("/properties")}
+                type="button"
+              >
+                Explore properties
+                <FaArrowRight size={13} />
+              </button>
+            </div>
           </div>
         ))}
-
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col items-start justify-center px-16 pt-16 text-left text-white sm:px-20 lg:px-6">
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-red-300 sm:text-sm">
-            Red Sand Group
-          </p>
-          <h1 className="mt-4 max-w-3xl text-3xl font-bold uppercase leading-tight sm:text-5xl lg:text-6xl">
-            {HERO_SLIDES[heroSlideIndex].title}
-          </h1>
-          <p className="mt-5 max-w-xl text-sm leading-6 text-gray-100 sm:text-lg">
-            {HERO_SLIDES[heroSlideIndex].description}
-          </p>
-          <button
-            className="mt-8 inline-flex items-center gap-3 rounded-md bg-red-600 px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-red-700 sm:px-8"
-            onClick={() => router.push("/properties")}
-            type="button"
-          >
-            View properties
-            <FaArrowRight size={13} />
-          </button>
-        </div>
 
         <button
           aria-label="Previous slide"
@@ -405,12 +406,13 @@ export default function Home() {
           <FaArrowRight />
         </button>
 
-        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
           {HERO_SLIDES.map((slide, index) => (
             <button
               aria-label={`Show slide ${index + 1}`}
-              className={`h-2.5 rounded-full transition-all ${
-                index === heroSlideIndex ? "w-8 bg-red-600" : "w-2.5 bg-white/70"
+              aria-current={index === heroSlideIndex ? "true" : undefined}
+              className={`h-2 rounded-full transition-all ${
+                index === heroSlideIndex ? "w-7 bg-red-500" : "w-2 bg-white/70 hover:bg-white"
               }`}
               key={slide.image}
               onClick={() => setHeroSlideIndex(index)}
